@@ -1,8 +1,5 @@
 package sco3;
 
-import static java.lang.foreign.MemorySegment.ofArray;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
@@ -18,8 +15,7 @@ public class Main {
 	}
 
 	void run() {
-		try (@SuppressWarnings("unused")
-		Arena arena = Arena.ofConfined()) {
+		try (Arena arena = Arena.ofConfined()) {
 			String snum = "3.1415926";
 
 			MemorySegment nativeData = arena.allocateFrom(snum);
