@@ -10,12 +10,16 @@ public class Main {
 	private static final String BAD_PI = "3.14asdf6";
 	private static final String PI = "3.1415926";
 	private static final String NATIVE_METHOD_SO = "native-method.so";
+	private static final String NATIVE_METHOD_RUST_SO = "libnative_method_rust.so";
+	private static final String[] LIBS = { NATIVE_METHOD_SO, NATIVE_METHOD_RUST_SO };
 
 	public static native void passString(long address, long length);
 
 	public static native double parseDouble( //
 			long address, long length, long error_address //
 	);
+
+	public static native void passStringRust(long address, long length);
 
 	public static void main(String[] argv) {
 		Main main = new Main();
@@ -26,6 +30,13 @@ public class Main {
 		MemorySegment nativeData = arena.allocateFrom(sValue);
 		long len = nativeData.byteSize();
 		passString(nativeData.address(), len);
+
+	}
+
+	void testPassRust(Arena arena, String sValue) {
+		MemorySegment nativeData = arena.allocateFrom(sValue);
+		long len = nativeData.byteSize();
+		passStringRust(nativeData.address(), len);
 
 	}
 
@@ -64,9 +75,13 @@ public class Main {
 	}
 
 	void run() {
-		int n = 3;
+		int n = 1;
 		try (Arena arena = Arena.ofConfined()) {
 			testPass(arena, PI);
+			testPassRust(arena, PI);
+
+			System.exit(0);
+
 			for (int i = 0; i < n; i++) {
 				testJava(PI);
 				testDouble(arena, PI);
@@ -77,16 +92,18 @@ public class Main {
 	}
 
 	static {
-		File soFile = new File(NATIVE_METHOD_SO);
-		if (soFile.exists()) {
-			try {
-				System.load(soFile.getAbsolutePath());
+		for (String soName : LIBS) {
+			File soFile = new File(soName);
+			if (soFile.exists()) {
+				try {
+					System.load(soFile.getAbsolutePath());
 
-			} catch (UnsatisfiedLinkError e) {
+				} catch (UnsatisfiedLinkError e) {
+				}
+
+			} else {
+				System.out.println("Library not found: " + soName);
 			}
-
-		} else {
-			System.out.println("Library not found: " + NATIVE_METHOD_SO);
 		}
 	}
 }
