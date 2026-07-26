@@ -80,7 +80,7 @@ Configuration cache entry reused.
 
 ```
 
-Tests are configured with JUnit 5. Tests tagged `integration` are excluded from the default run.
+
 
 ## Notes
 
