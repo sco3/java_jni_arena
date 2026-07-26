@@ -61,10 +61,23 @@ gcc -std=c99 -fPIC -shared \
   src/main/c/native_method.c
 ```
 
-## Testing
+## Run
 
 ```bash
-./gradlew test
+./gradlew run
+
+Reusing configuration cache.
+
+> Task :run
+Double: 3.1415926 error code: -1
+Double: 3.14 error code: 4
+Got: 3.1415926\0
+
+BUILD SUCCESSFUL in 732ms
+3 actionable tasks: 3 executed
+Configuration cache entry reused.
+
+
 ```
 
 Tests are configured with JUnit 5. Tests tagged `integration` are excluded from the default run.
