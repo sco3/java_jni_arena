@@ -1,6 +1,6 @@
 use jni::EnvUnowned;
 use jni::objects::JClass;
-use jni::sys::jlong;
+use jni::sys::{jdouble, jlong};
 use std::slice;
 use std::str;
 
@@ -25,4 +25,31 @@ pub extern "system" fn Java_sco3_Main_passStringRust(
             }
         }
     }
+}
+
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_sco3_Main_parseDoubleRust(
+    _env: EnvUnowned,
+    _class: JClass,
+    address: jlong,
+    length: jlong,
+) -> jdouble {
+    println!("Rust");
+
+    let d: f64;
+    unsafe {
+        let ptr = address as *const u8;
+        let bytes = slice::from_raw_parts(ptr, length as usize);
+
+        let s = String::from_utf8_lossy(bytes);
+        //println!("Rust parse got: {}", s);
+        match s.parse::<f64>() {
+            Ok(v) => d = v,
+            Err(_) => {
+                println!("Error during parsing: {:?}", s.as_bytes());
+                d = 0.0;
+            }
+        };
+    }
+    d as jdouble
 }
