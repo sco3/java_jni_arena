@@ -7,6 +7,8 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 
 public class Main {
+	private static final String BAD_PI = "3.14asdf6";
+	private static final String PI = "3.1415926";
 	private static final String NATIVE_METHOD_SO = "native-method.so";
 
 	public static native void passString(long address, long length);
@@ -28,20 +30,49 @@ public class Main {
 	}
 
 	void testDouble(Arena arena, String sValue) {
+		long ns = System.nanoTime();
 		MemorySegment nativeData = arena.allocateFrom(sValue);
 		long len = nativeData.byteSize();
 
 		MemorySegment errorSeg = arena.allocate(JAVA_LONG);
 		double dub = parseDouble(nativeData.address(), len, errorSeg.address());
 		long errorCode = errorSeg.get(JAVA_LONG, 0);
-		System.out.println("Double: " + dub + " error offset: " + errorCode);
+		long took = System.nanoTime() - ns;
+		System.out.println("" //
+				+ "Double: " + ((errorCode < 0) ? dub : "n/a") //
+				+ " took " + took //
+				+ " ns" //
+		);
+	}
+
+	void testJava(String sValue) {
+		long ns = System.nanoTime();
+		long errorCode = -1;
+		double dub = 0;
+		try {
+			dub = Double.parseDouble(sValue);
+
+		} catch (Exception e) {
+			errorCode = 1;
+		}
+		long took = System.nanoTime() - ns;
+		System.out.println("" //
+				+ "Java double: " //
+				+ ((errorCode < 0) ? dub : "n/a") //
+				+ " took " + took + " ns" //
+		);
 	}
 
 	void run() {
+		int n = 3;
 		try (Arena arena = Arena.ofConfined()) {
-			testPass(arena, "3.1415926");
-			testDouble(arena, "3.1415926");
-			testDouble(arena, "3.14asdf6");
+			testPass(arena, PI);
+			for (int i = 0; i < n; i++) {
+				testJava(PI);
+				testDouble(arena, PI);
+				testJava(BAD_PI);
+				testDouble(arena, BAD_PI);
+			}
 		}
 	}
 
