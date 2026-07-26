@@ -1,5 +1,6 @@
 package sco3;
 
+import static java.lang.System.out;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 import java.io.File;
@@ -92,23 +93,26 @@ public class Main {
 	}
 
 	void run() {
-		int n = 1;
+		int n = 3;
 		try (Arena arena = Arena.ofConfined()) {
 			testPass(arena, PI);
 			testPassRust(arena, PI);
 
-			testDoubleRust(arena, PI);
-			testDoubleRust(arena, BAD_PI);
+			// testDoubleRust(arena, PI);
+			// testDoubleRust(arena, BAD_PI);
 
-			System.exit(0);
+			// System.exit(0);
 
 			for (int i = 0; i < n; i++) {
 				testJava(PI);
 				testDouble(arena, PI);
 				testDoubleRust(arena, PI);
+				out.println();
 
 				testJava(BAD_PI);
 				testDouble(arena, BAD_PI);
+				testDoubleRust(arena, BAD_PI);
+				out.println();
 			}
 		}
 	}

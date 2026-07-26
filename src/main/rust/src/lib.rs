@@ -11,8 +11,6 @@ pub extern "system" fn Java_sco3_Main_passStringRust(
     address: jlong,
     length: jlong,
 ) {
-    println!("Rust");
-
     unsafe {
         let ptr = address as *const u8;
         let bytes = slice::from_raw_parts(ptr, length as usize);
@@ -34,7 +32,7 @@ pub extern "system" fn Java_sco3_Main_parseDoubleRust(
     address: jlong,
     length: jlong,
 ) -> jdouble {
-    println!("Rust");
+    //println!("Rust");
 
     let d: f64;
     unsafe {
@@ -46,7 +44,7 @@ pub extern "system" fn Java_sco3_Main_parseDoubleRust(
         match s.parse::<f64>() {
             Ok(v) => d = v,
             Err(_) => {
-                println!("Error during parsing: {:?}", s.as_bytes());
+                //println!("Error during parsing: {:?}", s.as_bytes());
                 d = 0.0;
             }
         };
