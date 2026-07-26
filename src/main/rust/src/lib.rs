@@ -31,20 +31,27 @@ pub extern "system" fn Java_sco3_Main_parseDoubleRust(
     _class: JClass,
     address: jlong,
     length: jlong,
+    error_address: jlong,
 ) -> jdouble {
     //println!("Rust");
 
     let d: f64;
     unsafe {
+        let error_ptr = error_address as *mut jlong;
+
         let ptr = address as *const u8;
         let bytes = slice::from_raw_parts(ptr, length as usize);
 
         let s = String::from_utf8_lossy(bytes);
         //println!("Rust parse got: {}", s);
         match s.parse::<f64>() {
-            Ok(v) => d = v,
+            Ok(v) => {
+                d = v;
+                *error_ptr = -1;
+            }
             Err(_) => {
                 //println!("Error during parsing: {:?}", s.as_bytes());
+                *error_ptr = 0;
                 d = 0.0;
             }
         };

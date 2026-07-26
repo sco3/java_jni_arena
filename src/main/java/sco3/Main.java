@@ -22,7 +22,9 @@ public class Main {
 
 	public static native void passStringRust(long address, long length);
 
-	public static native double parseDoubleRust(long address, long length);
+	public static native double parseDoubleRust( //
+			long address, long length, long error_address//
+	);
 
 	public static void main(String[] argv) {
 		Main main = new Main();
@@ -63,9 +65,9 @@ public class Main {
 		long ns = System.nanoTime();
 		MemorySegment nativeData = arena.allocateFrom(sValue);
 		long len = nativeData.byteSize() - 1;
-
-		double dub = parseDoubleRust(nativeData.address(), len);
-		long errorCode = -1; // errorSeg.get(JAVA_LONG, 0);
+		MemorySegment errorSeg = arena.allocate(JAVA_LONG);
+		double dub = parseDoubleRust(nativeData.address(), len, errorSeg.address());
+		long errorCode = errorSeg.get(JAVA_LONG, 0);
 		long took = System.nanoTime() - ns;
 		System.out.println("" //
 				+ "Rust double: " + ((errorCode < 0) ? dub : "n/a") //
