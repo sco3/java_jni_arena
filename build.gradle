@@ -48,3 +48,15 @@ application {
 tasks.withType (JavaExec) {
    jvmArgs = ['--enable-native-access=ALL-UNNAMED']
 }
+
+
+task compileNative(type: Exec) {
+    def javaHome = System.getProperty('java.home')
+
+    commandLine 'gcc', '-shared', '-fPIC', '-o', 'native-method.so',
+        'src/main/c/native_method.c',
+        '-I', "$javaHome/include",
+        '-I', "$javaHome/include/linux"
+}
+
+compileJava.dependsOn compileNative
