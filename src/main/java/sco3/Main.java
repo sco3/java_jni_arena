@@ -116,14 +116,15 @@ public class Main {
 
 	void run() {
 		Map<String, Long> metrics = new TreeMap<String, Long>();
-		int n = 100000;
+		int n = 10000000;
 
 		try (Arena arena = Arena.ofConfined()) {
 			var err_seg = arena.allocate(JAVA_LONG);
 			var data_seg = arena.allocate(1024);
 			testPass(arena, PI);
 			testPassRust(arena, PI);
-			out.println();
+
+			out.println("\nRun " + n + " tests\n");
 
 			for (int i = 0; i < n; i++) {
 				testJava(PI, metrics);
