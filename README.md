@@ -78,14 +78,14 @@ Reusing configuration cache.
 C got: 3.1415926\0
 Rust got: 3.1415926
 
-C double: 3.1415926                       382.86 ns
-C double: n/a                             414.42 ns
-Java double: 3.1415926                    152.18 ns
-Java double: n/a                         1081.03 ns
-Rust double: 3.1415926                    223.12 ns
-Rust double: n/a                          225.81 ns
-Rust fast float: 3.1415926                307.38 ns
-Rust fast float: n/a                      504.45 ns
+C double: 3.1415926                       496.78 ns
+C double: n/a                             470.38 ns
+Java double: 3.1415926                    138.47 ns
+Java double: n/a                         1062.67 ns
+Rust double: 3.1415926                    219.63 ns
+Rust double: n/a                          219.80 ns
+Rust fast float: 3.1415926                177.32 ns
+Rust fast float: n/a                      179.98 ns
 
 BUILD SUCCESSFUL in 1s
 3 actionable tasks: 3 executed
