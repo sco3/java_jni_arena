@@ -9,6 +9,9 @@ group = 'sco3'
 version = '0.0.1-SNAPSHOT'
 
 java {
+    sourceCompatibility = JavaVersion.VERSION_25 
+    targetCompatibility = JavaVersion.VERSION_25
+
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(25)
 	}

@@ -8,4 +8,5 @@ edition = "2024"
 crate-type = ["cdylib"]  # Создаёт .so/.dylib/.dll
 
 [dependencies]
+fast-float = "0.2.0"
 jni = "0.22.4"

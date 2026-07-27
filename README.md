@@ -76,33 +76,17 @@ Reusing configuration cache.
 
 > Task :run
 Rust got: 3.1415926
-Java double: 3.1415926 took 595180 ns
-Double: 3.1415926 took 611370 ns
-Rust double: 3.1415926 took 81122 ns
-
-Java double: n/a took 101850 ns
-Double: n/a took 31609 ns
-Rust double: n/a took 18134 ns
-
-Java double: 3.1415926 took 8265 ns
-Double: 3.1415926 took 19086 ns
-Rust double: 3.1415926 took 17923 ns
-
-Java double: n/a took 10600 ns
-Double: n/a took 18896 ns
-Rust double: n/a took 17462 ns
-
-Java double: 3.1415926 took 5701 ns
-Double: 3.1415926 took 18425 ns
-Rust double: 3.1415926 took 17754 ns
-
-Java double: n/a took 8386 ns
-Double: n/a took 19046 ns
-Rust double: n/a took 17633 ns
-
+C double: 3.1415926                       360.75 ns
+C double: n/a                             443.48 ns
+Java double: 3.1415926                    157.37 ns
+Java double: n/a                         1094.52 ns
+Rust double: 3.1415926                    352.60 ns
+Rust double: n/a                          281.01 ns
+Rust fast float: 3.1415926                260.27 ns
+Rust fast float: n/a                      326.80 ns
 Got: 3.1415926\0
 
-BUILD SUCCESSFUL in 662ms
+BUILD SUCCESSFUL in 1s
 3 actionable tasks: 2 executed, 1 up-to-date
 Configuration cache entry reused.
 

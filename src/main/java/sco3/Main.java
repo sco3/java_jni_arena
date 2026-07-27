@@ -1,11 +1,14 @@
 package sco3;
 
+import static java.lang.String.format;
 import static java.lang.System.out;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 import java.io.File;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class Main {
 	private static final String BAD_PI = "3.14asdf6";
@@ -23,6 +26,10 @@ public class Main {
 	public static native void passStringRust(long address, long length);
 
 	public static native double parseDoubleRust( //
+			long address, long length, long error_address//
+	);
+
+	public static native double parseFastFloatRust( //
 			long address, long length, long error_address//
 	);
 
@@ -45,7 +52,7 @@ public class Main {
 
 	}
 
-	void testDouble(Arena arena, String sValue) {
+	void testDouble(Arena arena, String sValue, Map<String, Long> metrics) {
 		long ns = System.nanoTime();
 		MemorySegment nativeData = arena.allocateFrom(sValue);
 		long len = nativeData.byteSize();
@@ -54,14 +61,12 @@ public class Main {
 		double dub = parseDouble(nativeData.address(), len, errorSeg.address());
 		long errorCode = errorSeg.get(JAVA_LONG, 0);
 		long took = System.nanoTime() - ns;
-		System.out.println("" //
-				+ "Double: " + ((errorCode < 0) ? dub : "n/a") //
-				+ " took " + took //
-				+ " ns" //
-		);
+
+		String k = "C double: " + ((errorCode < 0) ? dub : "n/a");
+		metrics.merge(k, took, Long::sum);
 	}
 
-	void testDoubleRust(Arena arena, String sValue) {
+	void testDoubleRust(Arena arena, String sValue, Map<String, Long> metrics) {
 		long ns = System.nanoTime();
 		MemorySegment nativeData = arena.allocateFrom(sValue);
 		long len = nativeData.byteSize() - 1;
@@ -69,14 +74,24 @@ public class Main {
 		double dub = parseDoubleRust(nativeData.address(), len, errorSeg.address());
 		long errorCode = errorSeg.get(JAVA_LONG, 0);
 		long took = System.nanoTime() - ns;
-		System.out.println("" //
-				+ "Rust double: " + ((errorCode < 0) ? dub : "n/a") //
-				+ " took " + took //
-				+ " ns" //
-		);
+		String k = "Rust double: " + ((errorCode < 0) ? dub : "n/a");
+		metrics.merge(k, took, Long::sum);
 	}
 
-	void testJava(String sValue) {
+	void testFastFloatRust(Arena arena, String sValue, Map<String, Long> metrics) {
+		long ns = System.nanoTime();
+		MemorySegment nativeData = arena.allocateFrom(sValue);
+		long len = nativeData.byteSize() - 1;
+		MemorySegment errorSeg = arena.allocate(JAVA_LONG);
+		double dub = parseFastFloatRust(nativeData.address(), len,
+				errorSeg.address());
+		long errorCode = errorSeg.get(JAVA_LONG, 0);
+		long took = System.nanoTime() - ns;
+		String k = "Rust fast float: " + ((errorCode < 0) ? dub : "n/a");
+		metrics.merge(k, took, Long::sum);
+	}
+
+	void testJava(String sValue, Map<String, Long> metrics) {
 		long ns = System.nanoTime();
 		long errorCode = -1;
 		double dub = 0;
@@ -87,36 +102,37 @@ public class Main {
 			errorCode = 1;
 		}
 		long took = System.nanoTime() - ns;
-		System.out.println("" //
-				+ "Java double: " //
-				+ ((errorCode < 0) ? dub : "n/a") //
-				+ " took " + took + " ns" //
-		);
+		String k = "Java double: " + ((errorCode < 0) ? dub : "n/a");
+		metrics.merge(k, took, Long::sum);
 	}
 
 	void run() {
-		int n = 3;
+		Map<String, Long> metrics = new TreeMap<String, Long>();
+		int n = 100000;
 		try (Arena arena = Arena.ofConfined()) {
 			testPass(arena, PI);
 			testPassRust(arena, PI);
 
-			// testDoubleRust(arena, PI);
-			// testDoubleRust(arena, BAD_PI);
-
-			// System.exit(0);
-
 			for (int i = 0; i < n; i++) {
-				testJava(PI);
-				testDouble(arena, PI);
-				testDoubleRust(arena, PI);
-				out.println();
+				testJava(PI, metrics);
+				testDouble(arena, PI, metrics);
+				testDoubleRust(arena, PI, metrics);
+				testFastFloatRust(arena, PI, metrics);
 
-				testJava(BAD_PI);
-				testDouble(arena, BAD_PI);
-				testDoubleRust(arena, BAD_PI);
-				out.println();
+				testJava(BAD_PI, metrics);
+				testDouble(arena, BAD_PI, metrics);
+				testDoubleRust(arena, BAD_PI, metrics);
+				testFastFloatRust(arena, BAD_PI, metrics);
+
+			}
+			for (var e : metrics.entrySet()) {
+				var label = format("%-32s", e.getKey());
+				var value = format("%16.2f ns", 1.0 * e.getValue() / n);
+				out.println(label + value);
+
 			}
 		}
+		System.exit(0);
 	}
 
 	static {
