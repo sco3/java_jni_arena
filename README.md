@@ -97,6 +97,6 @@ This runs `sco3.Main` with `--enable-native-access=ALL-UNNAMED`, invoking both C
 
 ## Notes
 
-- The `java.lang.foreign` API was finalized in JDK 22 (JEP 454). This project targets JDK 25 for the latest improvements.
+- The `java.lang.foreign` API is in use.
 - The application loads `native-method.so` (C implementation) and `libnative_method_rust.so` (Rust implementation) from the current working directory at runtime.
-- The `build-native.sh` script encodes the GCC version in the output filename (e.g., `native-method-gcc-14.2.0.so`) to allow testing across multiple compiler versions.
+- The `build-native.sh` script encodes the GCC version in the output filename (e.g., `native-method-gcc-16.1.1.so`) to allow testing across multiple compiler versions.
