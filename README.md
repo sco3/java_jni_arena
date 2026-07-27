@@ -78,18 +78,16 @@ Reusing configuration cache.
 C got: 3.1415926\0
 Rust got: 3.1415926
 
-C double: 3.1415926                       496.78 ns
-C double: n/a                             470.38 ns
-Java double: 3.1415926                    138.47 ns
-Java double: n/a                         1062.67 ns
-Rust double: 3.1415926                    219.63 ns
-Rust double: n/a                          219.80 ns
-Rust fast float: 3.1415926                177.32 ns
-Rust fast float: n/a                      179.98 ns
+C double: 3.1415926                       260.26 ns
+C double: n/a                             264.66 ns
+Java double: 3.1415926                    142.61 ns
+Java double: n/a                         1049.53 ns
+Rust double: 3.1415926                    199.30 ns
+Rust double: n/a                          195.48 ns
+Rust fast float: 3.1415926                175.22 ns
+Rust fast float: n/a                      171.56 ns
 
 BUILD SUCCESSFUL in 1s
-3 actionable tasks: 3 executed
-Configuration cache entry reused.
 
 ```
 

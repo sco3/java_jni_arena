@@ -54,12 +54,14 @@ public class Main {
 
 	}
 
-	void testDouble(Arena arena, String sValue, Map<String, Long> metrics) {
+	void testDouble(Arena arena, String sValue, MemorySegment nativeData,
+			MemorySegment errorSeg, Map<String, Long> metrics) {
 		long ns = System.nanoTime();
-		MemorySegment nativeData = arena.allocateFrom(sValue);
-		long len = nativeData.byteSize();
 
-		MemorySegment errorSeg = arena.allocate(JAVA_LONG);
+		var bytes = sValue.getBytes(StandardCharsets.UTF_8);
+		int len = bytes.length;
+		MemorySegment.copy(bytes, 0, nativeData, ValueLayout.JAVA_BYTE, 0, len);
+
 		double dub = parseDouble(nativeData.address(), len, errorSeg.address());
 		long errorCode = errorSeg.get(JAVA_LONG, 0);
 		long took = System.nanoTime() - ns;
@@ -125,12 +127,12 @@ public class Main {
 
 			for (int i = 0; i < n; i++) {
 				testJava(PI, metrics);
-				testDouble(arena, PI, metrics);
+				testDouble(arena, PI, data_seg, err_seg, metrics);
 				testDoubleRust(arena, PI, data_seg, err_seg, metrics);
 				testFastFloatRust(arena, PI, data_seg, err_seg, metrics);
 
 				testJava(BAD_PI, metrics);
-				testDouble(arena, BAD_PI, metrics);
+				testDouble(arena, BAD_PI, data_seg, err_seg, metrics);
 				testDoubleRust(arena, BAD_PI, data_seg, err_seg, metrics);
 				testFastFloatRust(arena, BAD_PI, data_seg, err_seg, metrics);
 
