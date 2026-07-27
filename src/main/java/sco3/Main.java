@@ -112,6 +112,7 @@ public class Main {
 		try (Arena arena = Arena.ofConfined()) {
 			testPass(arena, PI);
 			testPassRust(arena, PI);
+			out.println();
 
 			for (int i = 0; i < n; i++) {
 				testJava(PI, metrics);

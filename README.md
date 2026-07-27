@@ -75,19 +75,20 @@ gradle run
 Reusing configuration cache.
 
 > Task :run
+C got: 3.1415926\0
 Rust got: 3.1415926
-C double: 3.1415926                       360.75 ns
-C double: n/a                             443.48 ns
-Java double: 3.1415926                    157.37 ns
-Java double: n/a                         1094.52 ns
-Rust double: 3.1415926                    352.60 ns
-Rust double: n/a                          281.01 ns
-Rust fast float: 3.1415926                260.27 ns
-Rust fast float: n/a                      326.80 ns
-Got: 3.1415926\0
+
+C double: 3.1415926                       430.77 ns
+C double: n/a                             380.04 ns
+Java double: 3.1415926                    163.79 ns
+Java double: n/a                         1079.37 ns
+Rust double: 3.1415926                    282.97 ns
+Rust double: n/a                          346.39 ns
+Rust fast float: 3.1415926                323.96 ns
+Rust fast float: n/a                      254.51 ns
 
 BUILD SUCCESSFUL in 1s
-3 actionable tasks: 2 executed, 1 up-to-date
+3 actionable tasks: 3 executed
 Configuration cache entry reused.
 
 ```

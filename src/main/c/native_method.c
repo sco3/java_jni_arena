@@ -11,7 +11,7 @@ JNIEXPORT void JNICALL Java_sco3_Main_passString(
 
     unsigned char* ptr = (unsigned char*) address;
     
-    printf ("Got: ");
+    printf ("C got: ");
     for (int i = 0; i < length; i++) {
 		if (ptr[i] == 0) {
 			putc ('\\',stdout);
@@ -21,6 +21,7 @@ JNIEXPORT void JNICALL Java_sco3_Main_passString(
 		}
     }
     printf ("\n");
+	fflush(stdout);
 }
 
 

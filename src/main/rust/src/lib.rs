@@ -1,7 +1,6 @@
 use jni::EnvUnowned;
 use jni::objects::JClass;
 use jni::sys::{jdouble, jlong};
-use std::io::{self, Write};
 use std::slice;
 use std::str;
 
@@ -23,7 +22,6 @@ pub extern "system" fn Java_sco3_Main_passStringRust(
             println!("Rust got lossy: {}", s);
         }
     }
-    let _ = io::stdout().flush();
 }
 
 #[unsafe(no_mangle)]
