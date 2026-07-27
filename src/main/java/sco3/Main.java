@@ -66,11 +66,12 @@ public class Main {
 		metrics.merge(k, took, Long::sum);
 	}
 
-	void testDoubleRust(Arena arena, String sValue, Map<String, Long> metrics) {
+	void testDoubleRust(Arena arena, String sValue, MemorySegment errorSeg,
+			Map<String, Long> metrics) {
 		long ns = System.nanoTime();
 		MemorySegment nativeData = arena.allocateFrom(sValue);
 		long len = nativeData.byteSize() - 1;
-		MemorySegment errorSeg = arena.allocate(JAVA_LONG);
+
 		double dub = parseDoubleRust(nativeData.address(), len, errorSeg.address());
 		long errorCode = errorSeg.get(JAVA_LONG, 0);
 		long took = System.nanoTime() - ns;
@@ -109,7 +110,9 @@ public class Main {
 	void run() {
 		Map<String, Long> metrics = new TreeMap<String, Long>();
 		int n = 100000;
+
 		try (Arena arena = Arena.ofConfined()) {
+			var err_seg = arena.allocate(JAVA_LONG);
 			testPass(arena, PI);
 			testPassRust(arena, PI);
 			out.println();
@@ -117,12 +120,12 @@ public class Main {
 			for (int i = 0; i < n; i++) {
 				testJava(PI, metrics);
 				testDouble(arena, PI, metrics);
-				testDoubleRust(arena, PI, metrics);
+				testDoubleRust(arena, PI, err_seg, metrics);
 				testFastFloatRust(arena, PI, metrics);
 
 				testJava(BAD_PI, metrics);
 				testDouble(arena, BAD_PI, metrics);
-				testDoubleRust(arena, BAD_PI, metrics);
+				testDoubleRust(arena, BAD_PI, err_seg, metrics);
 				testFastFloatRust(arena, BAD_PI, metrics);
 
 			}
