@@ -1,6 +1,8 @@
 use jni::EnvUnowned;
 use jni::objects::JClass;
 use jni::sys::{jdouble, jlong};
+use std::ffi::CStr;
+use std::os::raw::c_char;
 use std::slice;
 use std::str;
 
@@ -99,4 +101,17 @@ pub extern "system" fn Java_sco3_Main_parseFastFloatRust(
     };
 
     d as jdouble
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn process_string(s: *const c_char) {
+    let c_str = unsafe { CStr::from_ptr(s) };
+    match c_str.to_str() {
+        Ok(rust_string) => {
+            println!("Rust downcall got: {rust_string}");
+        }
+        Err(e) => {
+            println!("Rust downcall error: {e:?}");
+        }
+    }
 }

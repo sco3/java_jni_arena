@@ -1,23 +1,37 @@
 package sco3;
 
 import static java.lang.String.format;
+import static java.lang.System.nanoTime;
 import static java.lang.System.out;
+import static java.lang.foreign.Linker.nativeLinker;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 import java.io.File;
 import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
+import java.lang.invoke.MethodHandle;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class Main {
 	private static final String BAD_PI = "3.14asdf6";
 	private static final String PI = "3.1415926";
+
 	private static final String NATIVE_METHOD_SO = "native-method.so";
 	private static final String NATIVE_METHOD_RUST_SO = "libnative_method_rust.so";
+
 	private static final String[] LIBS = { NATIVE_METHOD_SO, NATIVE_METHOD_RUST_SO };
+
+	private static final Path RUST_PATH = Path.of(NATIVE_METHOD_RUST_SO)
+			.toAbsolutePath();
+
+	private static final MethodHandle PROCESS_STRING_MH;
 
 	public static native void passString(long address, long length);
 
@@ -48,10 +62,25 @@ public class Main {
 	}
 
 	void testPassRust(Arena arena, String sValue) {
+		long start = nanoTime();
 		MemorySegment nativeData = arena.allocateFrom(sValue);
 		long len = nativeData.byteSize();
 		passStringRust(nativeData.address(), len);
+		out.println("Rust pass took: " + (nanoTime() - start));
 
+	}
+
+	void testPassDowncall(Arena arena,
+			String sValue/* , MethodHandle processString */) {
+		long start = nanoTime();
+		MemorySegment nativeData = arena.allocateFrom(sValue);
+		try {
+			PROCESS_STRING_MH.invokeExact(nativeData);
+		} catch (Throwable t) {
+			out.println("Error: " + t);
+
+		}
+		out.println("Rust downcall pass took: " + (nanoTime() - start));
 	}
 
 	void testDouble(Arena arena, String sValue, MemorySegment nativeData,
@@ -116,13 +145,16 @@ public class Main {
 
 	void run() {
 		Map<String, Long> metrics = new TreeMap<String, Long>();
-		int n = 10000000;
+		int n = 1000000;
 
 		try (Arena arena = Arena.ofConfined()) {
+
 			var err_seg = arena.allocate(JAVA_LONG);
 			var data_seg = arena.allocate(1024);
 			testPass(arena, PI);
+
 			testPassRust(arena, PI);
+			testPassDowncall(arena, PI /* ,processString */);
 
 			out.println("\nRun " + n + " tests\n");
 
@@ -162,5 +194,16 @@ public class Main {
 				System.out.println("Library not found: " + soName);
 			}
 		}
+
+		Linker linker = nativeLinker();
+		SymbolLookup rustLib = SymbolLookup.libraryLookup(RUST_PATH, Arena.global());
+		MemorySegment funcAddr = rustLib.find("process_string").orElseThrow();
+
+		FunctionDescriptor descriptor = FunctionDescriptor
+				.ofVoid(ValueLayout.ADDRESS);
+
+		PROCESS_STRING_MH = linker.downcallHandle(funcAddr, descriptor,
+				Linker.Option.critical(false));
+
 	}
 }
