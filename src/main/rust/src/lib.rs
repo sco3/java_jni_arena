@@ -87,7 +87,6 @@ pub extern "system" fn Java_sco3_Main_parseFastFloatRust(
     //     .and_then(|s| s.trim().parse::<f64>().map_err(|_| ()));
     let v = fast_float::parse(bytes);
 
-    //println!("Rust parse got: {}", s);
     match v {
         Ok(v) => {
             unsafe { *error_ptr = -1 };
@@ -112,6 +111,26 @@ pub extern "C" fn process_string(s: *const c_char) {
         }
         Err(e) => {
             println!("Rust downcall error: {e:?}");
+        }
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "system" fn parse_fast_float_rust(
+    address: *const u8,
+    length: usize,
+    error_ptr: *mut i32,
+) -> f64 {
+    let bytes = unsafe { slice::from_raw_parts(address, length) };
+
+    match fast_float::parse(bytes) {
+        Ok(v) => {
+            unsafe { *error_ptr = -1 };
+            v
+        }
+        Err(_e) => {
+            unsafe { *error_ptr = 0 };
+            0.0
         }
     }
 }

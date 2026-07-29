@@ -3,7 +3,9 @@ package sco3;
 import static java.lang.String.format;
 import static java.lang.System.nanoTime;
 import static java.lang.System.out;
+import static java.lang.foreign.FunctionDescriptor.ofVoid;
 import static java.lang.foreign.Linker.nativeLinker;
+import static java.lang.foreign.Linker.Option.critical;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 import java.io.File;
@@ -32,6 +34,7 @@ public class Main {
 			.toAbsolutePath();
 
 	private static final MethodHandle PROCESS_STRING_MH;
+	private static final MethodHandle PARSE_DOUBLE_MH;
 
 	public static native void passString(long address, long length);
 
@@ -62,25 +65,19 @@ public class Main {
 	}
 
 	void testPassRust(Arena arena, String sValue) {
-		long start = nanoTime();
 		MemorySegment nativeData = arena.allocateFrom(sValue);
 		long len = nativeData.byteSize();
 		passStringRust(nativeData.address(), len);
-		out.println("Rust pass took: " + (nanoTime() - start));
-
 	}
 
 	void testPassDowncall(Arena arena,
 			String sValue/* , MethodHandle processString */) {
-		long start = nanoTime();
 		MemorySegment nativeData = arena.allocateFrom(sValue);
 		try {
 			PROCESS_STRING_MH.invokeExact(nativeData);
 		} catch (Throwable t) {
 			out.println("Error: " + t);
-
 		}
-		out.println("Rust downcall pass took: " + (nanoTime() - start));
 	}
 
 	void testDouble(Arena arena, String sValue, MemorySegment nativeData,
@@ -128,6 +125,25 @@ public class Main {
 		metrics.merge(k, took, Long::sum);
 	}
 
+	void testFastFloatRustDowncall(Arena arena, String sValue,
+			MemorySegment nativeData, MemorySegment errorSeg,
+			Map<String, Long> metrics) {
+		long ns = System.nanoTime();
+		var bytes = sValue.getBytes(StandardCharsets.UTF_8);
+		int len = bytes.length;
+		MemorySegment.copy(bytes, 0, nativeData, ValueLayout.JAVA_BYTE, 0, len);
+		double dub = 0.0;
+		try {
+			dub = (double) PARSE_DOUBLE_MH.invoke(nativeData, len, errorSeg);
+		} catch (Throwable t) {
+			out.println("Error: " + t);
+		}
+		long errorCode = errorSeg.get(JAVA_LONG, 0);
+		long took = System.nanoTime() - ns;
+		String k = "Rust fast float downcall: " + ((errorCode < 0) ? dub : "n/a");
+		metrics.merge(k, took, Long::sum);
+	}
+
 	void testJava(String sValue, Map<String, Long> metrics) {
 		long ns = System.nanoTime();
 		long errorCode = -1;
@@ -154,7 +170,7 @@ public class Main {
 			testPass(arena, PI);
 
 			testPassRust(arena, PI);
-			testPassDowncall(arena, PI /* ,processString */);
+			testPassDowncall(arena, PI);
 
 			out.println("\nRun " + n + " tests\n");
 
@@ -163,15 +179,17 @@ public class Main {
 				testDouble(arena, PI, data_seg, err_seg, metrics);
 				testDoubleRust(arena, PI, data_seg, err_seg, metrics);
 				testFastFloatRust(arena, PI, data_seg, err_seg, metrics);
+				testFastFloatRustDowncall(arena, PI, data_seg, err_seg, metrics);
 
 				testJava(BAD_PI, metrics);
 				testDouble(arena, BAD_PI, data_seg, err_seg, metrics);
 				testDoubleRust(arena, BAD_PI, data_seg, err_seg, metrics);
 				testFastFloatRust(arena, BAD_PI, data_seg, err_seg, metrics);
+				testFastFloatRustDowncall(arena, BAD_PI, data_seg, err_seg, metrics);
 
 			}
 			for (var e : metrics.entrySet()) {
-				var label = format("%-32s", e.getKey());
+				var label = format("%-42s", e.getKey());
 				var value = format("%16.2f ns", 1.0 * e.getValue() / n);
 				out.println(label + value);
 
@@ -197,13 +215,28 @@ public class Main {
 
 		Linker linker = nativeLinker();
 		SymbolLookup rustLib = SymbolLookup.libraryLookup(RUST_PATH, Arena.global());
-		MemorySegment funcAddr = rustLib.find("process_string").orElseThrow();
+		{
+			MemorySegment funcAddr = rustLib.find("process_string").orElseThrow();
 
-		FunctionDescriptor descriptor = FunctionDescriptor
-				.ofVoid(ValueLayout.ADDRESS);
+			FunctionDescriptor descriptor = ofVoid(ValueLayout.ADDRESS);
 
-		PROCESS_STRING_MH = linker.downcallHandle(funcAddr, descriptor,
-				Linker.Option.critical(false));
+			PROCESS_STRING_MH = linker.downcallHandle(funcAddr, descriptor,
+					critical(false));
+		}
+		{
+			MemorySegment funcAddr = rustLib.find("parse_fast_float_rust")
+					.orElseThrow();
+
+			FunctionDescriptor descriptor = FunctionDescriptor.of(
+					ValueLayout.JAVA_DOUBLE, //
+					ValueLayout.ADDRESS, //
+					ValueLayout.JAVA_LONG, //
+					ValueLayout.ADDRESS //
+			);
+
+			PARSE_DOUBLE_MH = linker.downcallHandle(funcAddr, descriptor,
+					critical(false));
+		}
 
 	}
 }
