@@ -72,24 +72,27 @@ bash build-native-rust.sh
 
 ```bash
 gradle run
-Reusing configuration cache.
 
 > Task :run
 C got: 3.1415926\0
 Rust got: 3.1415926
+Rust downcall got: 3.1415926
 
-Run 10000000 tests
+Run 1000000 tests
 
-C double: 3.1415926                       148.85 ns
-C double: n/a                             141.35 ns
-Java double: 3.1415926                     76.41 ns
-Java double: n/a                          638.73 ns
-Rust double: 3.1415926                     86.42 ns
-Rust double: n/a                           83.86 ns
-Rust fast float: 3.1415926                 56.23 ns
-Rust fast float: n/a                       57.65 ns
+C double: 3.1415926                                 154.52 ns
+C double: n/a                                       156.82 ns
+Java double: 3.1415926                               82.98 ns
+Java double: n/a                                    712.33 ns
+Rust double: 3.1415926                               92.78 ns
+Rust double: n/a                                     96.75 ns
+Rust fast float downcall: 3.1415926                  79.30 ns
+Rust fast float downcall: n/a                        77.22 ns
+Rust fast float: 3.1415926                           72.98 ns
+Rust fast float: n/a                                 70.84 ns
 
-BUILD SUCCESSFUL in 19s
+BUILD SUCCESSFUL in 7s
+
 
 ```
 
