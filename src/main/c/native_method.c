@@ -71,7 +71,7 @@ JNIEXPORT double JNICALL Java_sco3_Main_parseDoubleFast(
 	
 	
 	ffc_result res = ffc_parse_double(length, ptr, &result);
-	if (res.outcome != FFC_OUTCOME_OK) {
+	if (res.outcome != FFC_OUTCOME_OK || res.ptr != ptr + length) {
 	   //printf ("error\n");
 	   long pos = res.ptr - ptr;
 	   *e_ptr = pos;

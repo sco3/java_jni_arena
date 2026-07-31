@@ -91,18 +91,18 @@ Rust downcall got: 3.1415926
 
 Run 1000000 tests
 
-C double: 3.1415926                                 160.42 ns
-C double: n/a                                       155.68 ns
-C fast double: 3.14                                  92.70 ns
-C fast double: 3.1415926                             82.61 ns
-Java double: 3.1415926                               79.99 ns
-Java double: n/a                                    702.68 ns
-Rust double: 3.1415926                               94.75 ns
-Rust double: n/a                                     99.36 ns
-Rust fast float downcall: 3.1415926                  79.59 ns
-Rust fast float downcall: n/a                        77.44 ns
-Rust fast float: 3.1415926                           70.90 ns
-Rust fast float: n/a                                 72.08 ns
+C double: 3.1415926                                 163.05 ns
+C double: n/a                                       152.65 ns
+C fast double: 3.1415926                             77.21 ns
+C fast double: n/a                                   88.19 ns
+Java double: 3.1415926                               81.30 ns
+Java double: n/a                                    709.55 ns
+Rust double: 3.1415926                               97.56 ns
+Rust double: n/a                                     97.76 ns
+Rust fast float downcall: 3.1415926                  78.87 ns
+Rust fast float downcall: n/a                        77.05 ns
+Rust fast float: 3.1415926                           72.28 ns
+Rust fast float: n/a                                 72.43 ns
 
 BUILD SUCCESSFUL in 5s
 ```
