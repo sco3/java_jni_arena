@@ -41,6 +41,10 @@ public class Main {
 	public static native double parseDouble( //
 			long address, long length, long error_address //
 	);
+	
+	public static native double parseDoubleFast( //
+			long address, long length, long error_address //
+	);
 
 	public static native void passStringRust(long address, long length);
 
@@ -93,6 +97,22 @@ public class Main {
 		long took = System.nanoTime() - ns;
 
 		String k = "C double: " + ((errorCode < 0) ? dub : "n/a");
+		metrics.merge(k, took, Long::sum);
+	}
+	
+	void testDoubleFast(Arena arena, String sValue, MemorySegment nativeData,
+			MemorySegment errorSeg, Map<String, Long> metrics) {
+		long ns = System.nanoTime();
+
+		var bytes = sValue.getBytes(StandardCharsets.UTF_8);
+		int len = bytes.length;
+		MemorySegment.copy(bytes, 0, nativeData, ValueLayout.JAVA_BYTE, 0, len);
+
+		double dub = parseDoubleFast(nativeData.address(), len, errorSeg.address());
+		long errorCode = errorSeg.get(JAVA_LONG, 0);
+		long took = System.nanoTime() - ns;
+
+		String k = "C fast double: " + ((errorCode < 0) ? dub : "n/a");
 		metrics.merge(k, took, Long::sum);
 	}
 
@@ -177,12 +197,14 @@ public class Main {
 			for (int i = 0; i < n; i++) {
 				testJava(PI, metrics);
 				testDouble(arena, PI, data_seg, err_seg, metrics);
+				testDoubleFast(arena, PI, data_seg, err_seg, metrics);
 				testDoubleRust(arena, PI, data_seg, err_seg, metrics);
 				testFastFloatRust(arena, PI, data_seg, err_seg, metrics);
 				testFastFloatRustDowncall(arena, PI, data_seg, err_seg, metrics);
 
 				testJava(BAD_PI, metrics);
 				testDouble(arena, BAD_PI, data_seg, err_seg, metrics);
+				testDoubleFast(arena, BAD_PI, data_seg, err_seg, metrics);
 				testDoubleRust(arena, BAD_PI, data_seg, err_seg, metrics);
 				testFastFloatRust(arena, BAD_PI, data_seg, err_seg, metrics);
 				testFastFloatRustDowncall(arena, BAD_PI, data_seg, err_seg, metrics);

@@ -14,7 +14,7 @@ out=native-method-$gcc-$ver.so
 
 extra=$2
 
-$gcc -s -g0 \
+$gcc -s -g0 -O3 \
   -std=c99  \
   -I ./include -I ./include/linux \
   -fPIC  -shared \

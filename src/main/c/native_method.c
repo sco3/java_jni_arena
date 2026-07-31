@@ -2,6 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define FFC_IMPL
+#include "ffc.h"
+
 JNIEXPORT void JNICALL Java_sco3_Main_passString(
     JNIEnv *env, 
     jobject obj, 
@@ -50,5 +53,35 @@ JNIEXPORT double JNICALL Java_sco3_Main_parseDouble(
 	//printf ("%.16g\n", result);
 	return result;
 }
+
+
+
+JNIEXPORT double JNICALL Java_sco3_Main_parseDoubleFast(
+    JNIEnv *env, 
+    jobject obj, 
+    jlong address,    
+    jint length,
+	jlong error_address
+) {
+	double result = 0;    
+
+    char* ptr = (char*) address;
+	long* e_ptr = (long*) error_address;
+	
+	
+	
+	ffc_result res = ffc_parse_double(length, ptr, &result);
+	if (res.outcome != FFC_OUTCOME_OK) {
+	   //printf ("error\n");
+	   long pos = res.ptr - ptr;
+	   *e_ptr = pos;
+	} else {
+		//printf ("ok\n");
+		*e_ptr = -1;
+	}
+	//printf ("%.16g\n", result);
+	return result;
+}
+
 
 
