@@ -25,6 +25,7 @@ The native functions are implemented across two languages:
 - **C** (`src/main/c/native_method.c` → `native-method.so`):
   - `passString` (JNI): Reads raw memory pointer and prints UTF-8 characters directly.
   - `parseDouble` (JNI): Parses double floating point numbers using `strtod` and reports parse error positions via pointer.
+  - `parseDoubleFast` (JNI): Parses double floating point numbers using fast float C library (`ffc.h`) and reports parse error positions via pointer.
 - **Rust** (`src/main/rust/src/lib.rs` → `libnative_method_rust.so`):
   - `passStringRust` (JNI): Constructs a Rust slice `&[u8]` from raw pointer address and length, validating UTF-8 and printing output.
   - `parseDoubleRust` (JNI): Constructs a Rust slice `&[u8]` from raw pointer and parses `f64`.
@@ -45,7 +46,9 @@ The native functions are implemented across two languages:
 │       ├── jni_md.h
 │       └── jawt_md.h
 └── src/main/
-    ├── c/native_method.c         # JNI native C implementation
+    ├── c/                        # Native C implementation
+    │   ├── ffc.h                 # Fast float parser header for C
+    │   └── native_method.c       # JNI native C implementation
     ├── java/sco3/Main.java       # Java entry point (JNI & FFM downcall invocations)
     └── rust/                     # Native Rust implementation (JNI & FFM downcall exports)
         ├── Cargo.toml
@@ -79,6 +82,7 @@ bash build-native-rust.sh
 
 ```bash
 gradle run
+Reusing configuration cache.
 
 > Task :run
 C got: 3.1415926\0
@@ -87,18 +91,20 @@ Rust downcall got: 3.1415926
 
 Run 1000000 tests
 
-C double: 3.1415926                                 154.52 ns
-C double: n/a                                       156.82 ns
-Java double: 3.1415926                               82.98 ns
-Java double: n/a                                    712.33 ns
-Rust double: 3.1415926                               92.78 ns
-Rust double: n/a                                     96.75 ns
-Rust fast float downcall: 3.1415926                  79.30 ns
-Rust fast float downcall: n/a                        77.22 ns
-Rust fast float: 3.1415926                           72.98 ns
-Rust fast float: n/a                                 70.84 ns
+C double: 3.1415926                                 160.42 ns
+C double: n/a                                       155.68 ns
+C fast double: 3.14                                  92.70 ns
+C fast double: 3.1415926                             82.61 ns
+Java double: 3.1415926                               79.99 ns
+Java double: n/a                                    702.68 ns
+Rust double: 3.1415926                               94.75 ns
+Rust double: n/a                                     99.36 ns
+Rust fast float downcall: 3.1415926                  79.59 ns
+Rust fast float downcall: n/a                        77.44 ns
+Rust fast float: 3.1415926                           70.90 ns
+Rust fast float: n/a                                 72.08 ns
 
-BUILD SUCCESSFUL in 7s
+BUILD SUCCESSFUL in 5s
 ```
 
 This runs `sco3.Main` with `--enable-native-access=ALL-UNNAMED`, invoking C and Rust native implementations via both JNI and FFM downcalls alongside standard Java parsing.
